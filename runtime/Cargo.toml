@@ -47,6 +47,8 @@ sp-version = {default-features = false, version = '3.0.0', git = 'https://github
 
 # local dependencies
 pallet-template = {default-features = false, version = '3.0.0', path = '../pallets/template'}
+pallet-dotmog = { default-features = false, version = '3.0.0', path = '../pallets/dotmog', package = "pallet-dotmog" }
+pallet-dotmogbase = { version = "3.0.0", default-features = false, path = "../pallets/dotmogbase", package = "pallet-dotmogbase" }
 
 # octopus
 log = { version = "0.4.14", default-features = false }
@@ -62,6 +64,8 @@ frame-election-provider-support = { version = "3.0.0", default-features = false,
 
 beefy-primitives = { git = "https://github.com/octopus-network/grandpa-bridge-gadget", branch = "octopus", default-features = false }
 pallet-beefy = { git = "https://github.com/octopus-network/grandpa-bridge-gadget", branch = "octopus", default-features = false }
+
+pallet-octopus-appchain = { git = 'https://github.com/octopus-network/pallet-octopus-appchain.git', branch = 'master', default-features = false }
 
 [features]
 default = ['std']
@@ -88,6 +92,8 @@ std = [
 	'pallet-randomness-collective-flip/std',
 	'pallet-sudo/std',
 	'pallet-template/std',
+	'pallet-dotmog/std',
+	'pallet-dotmogbase/std',
 	'pallet-timestamp/std',
 	'pallet-transaction-payment-rpc-runtime-api/std',
 	'pallet-transaction-payment/std',
@@ -113,4 +119,5 @@ std = [
 	'frame-election-provider-support/std',
 	'beefy-primitives/std',
 	'pallet-beefy/std',
+	'pallet-octopus-appchain/std',
 ]

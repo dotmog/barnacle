@@ -44,6 +44,7 @@ use frame_support::{
 };
 use sp_runtime::traits::{
 	self, StaticLookup, SaturatedConversion, OpaqueKeys, Keccak256,
+	ConvertInto,
 };
 use pallet_session::{historical as pallet_session_historical};
 use frame_system::{
@@ -60,6 +61,8 @@ use frame_election_provider_support::onchain;
 
 /// Import the template pallet.
 pub use pallet_template;
+pub use pallet_dotmog;
+pub use pallet_dotmogbase;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -112,6 +115,7 @@ pub mod opaque {
 			pub grandpa: Grandpa,
 			pub im_online: ImOnline,
 			pub beefy: Beefy,
+			pub octopus: OctopusAppchain,
 		}
 	}
 }
@@ -127,7 +131,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 100,
+	spec_version: 101,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -392,10 +396,10 @@ parameter_types! {
 impl pallet_session::Config for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	type ValidatorIdOf = ConvertInto;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
-	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type SessionManager = OctopusAppchain;
 	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = opaque::SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
@@ -581,6 +585,30 @@ impl pallet_beefy::Config for Runtime {
 	type AuthorityId = BeefyId;
 }
 
+pub struct OctopusAppCrypto;
+
+impl frame_system::offchain::AppCrypto<<Signature as Verify>::Signer, Signature> for OctopusAppCrypto {
+	type RuntimeAppPublic = pallet_octopus_appchain::crypto::AuthorityId;
+	type GenericSignature = sp_core::sr25519::Signature;
+	type GenericPublic = sp_core::sr25519::Public;
+}
+
+parameter_types! {
+	pub const GracePeriod: u32 = 5;
+	pub const UnsignedPriority: u64 = 1 << 20;
+}
+
+impl pallet_octopus_appchain::Config for Runtime {
+	type Event = Event;
+	type AuthorityId = OctopusAppCrypto;
+	type Call = Call;
+	type Assets = Assets;
+	type GracePeriod = GracePeriod;
+	type UnsignedPriority = UnsignedPriority;
+	const RELAY_CONTRACT: &'static [u8] = b"dev-1618284355026-5339538";
+	const TOKEN_LOCKER_CONTRACT: &'static [u8] = b"dev-1618284355026-5339538";
+}
+
 impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -589,6 +617,27 @@ impl pallet_sudo::Config for Runtime {
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
+}
+
+//parameter_types! {
+//	pub const DotMogPalletId: PalletId = PalletId(*b"py/dtmog");
+//}
+
+/// Configure the pallet dotmog in pallets/dotmog.
+impl pallet_dotmog::Config for Runtime {
+////	type PalletId = DotMogPalletId;
+	type Event = Event;
+	type Currency = Balances;
+	type Randomness = RandomnessCollectiveFlip;
+	type PricePayment = ();
+	//type Scheduler = Scheduler;
+	//type PalletsOrigin = OriginCaller;
+}
+
+/// Configure the pallet template in pallets/template.
+impl pallet_dotmogbase::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -614,8 +663,15 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage},
 		Assets: pallet_assets::{Pallet, Call, Storage, Event<T>},
 		Mmr: pallet_mmr::{Pallet, Storage},
+		OctopusAppchain: pallet_octopus_appchain::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned},
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
+
+		// Dot Mog Pallet, mandatory for a DOTMog universe chain.
+		DotMogModule: pallet_dotmog::{Pallet, Call, Storage, Event<T>, Config<T>},
+
+		// Dot Mog Base Pallet, maintaining not directly game related informations.
+		DotMogBase: pallet_dotmogbase::{Pallet, Call, Storage, Event<T>, Config<T>},
 	}
 );
 

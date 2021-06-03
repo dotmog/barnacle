@@ -1,0 +1,49 @@
+[package]
+name = "pallet-dotmog"
+version = "3.0.0"
+authors = ["DOT Mog Team <adming@dotmog.com>"]
+edition = "2018"
+license = "AGPL3.0"
+homepage = "https://www.dotmog.com"
+repository = "https://github.com/dotmog/substrate/"
+description = "FRAME pallet dmog for defining custom runtime logic."
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+# third-party dependencies
+serde = { version = "1.0.101", optional = true }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+
+# primitives
+sp-runtime = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-std = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-core = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+# node-primitives = { version = "2.0.0", default-features = false, path = "../../primitives" }
+
+# frame dependencies
+frame-support = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+frame-system = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+frame-benchmarking = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05', optional = true }
+
+[dev-dependencies]
+sp-io = {default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+
+[features]
+default = ['std']
+std = [
+	'serde',
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+    'sp-runtime/std',
+    'sp-core/std',
+	'frame-benchmarking/std',
+]
+runtime-benchmarks = [
+	'frame-benchmarking',
+	'sp-runtime/runtime-benchmarks',
+	'frame-system/runtime-benchmarks',
+]
